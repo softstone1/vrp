@@ -21,7 +21,7 @@ func NewShift(loads []Load) (*Shift, error) {
 	if len(loads) > 200 {
 		return nil, errors.New("number of loads is over the limit")
 	}
-	DescSortLoadsByPickup(loads)
+	descSortLoadsByPickup(loads)
 	loads[0].Assigned = true
 	driver1 := NewDriver(loads[0])
 	loads[len(loads)/2].Assigned = true
@@ -34,7 +34,7 @@ func NewShift(loads []Load) (*Shift, error) {
 	}, nil
 }
 
-func (s *Shift) AddDriver(driver Driver) {
+func (s *Shift) addDriver(driver Driver) {
 	s.Drivers = append(s.Drivers, driver)
 }
 
@@ -64,7 +64,8 @@ func (s *Shift) NextLoad() bool {
 			}
 			pickupTime := driver.LastLoad().DropOff.TimeToLocation(load.Pickup)
 
-			if driver.TotalTime - driver.LastLoad().DropOff.TimeToDepot() + pickupTime  + load.Duration() + load.DropOff.TimeToDepot() > maxTime {
+			if driver.TotalTime - driver.LastLoad().DropOff.TimeToDepot() + 
+				pickupTime  + load.Duration() + load.DropOff.TimeToDepot() > maxTime {
 				continue
 			}
 			if minPickupTime == -1 || minPickupTime > pickupTime {
@@ -80,7 +81,7 @@ func (s *Shift) NextLoad() bool {
 		if nextDriver != nil {
 			nextDriver.AddLoad(*nextLoad)
 		} else {
-			s.AddDriver(NewDriver(*nextLoad))
+			s.addDriver(NewDriver(*nextLoad))
 		}
 		return true
 	}
@@ -104,7 +105,7 @@ func (s *Shift) Output() string {
 	return sb.String()
 }
 
-func DescSortLoadsByPickup(loads []Load) {
+func descSortLoadsByPickup(loads []Load) {
 	slices.SortStableFunc(loads, func(l1, l2 Load) int {
 		return cmp.Compare(l2.Pickup.TimeToDepot(), l1.Pickup.TimeToDepot())
 	})

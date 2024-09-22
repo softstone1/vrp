@@ -16,3 +16,6 @@ Evaluate with training problems from root directly
 python3 evaluateShared.py --cmd ./vrp --problemDir problems
 ```
 
+Evaluate Result
+
+![evaluate result](Screenshot-2024-09-22-100626.png)

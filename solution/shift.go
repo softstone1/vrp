@@ -1,9 +1,8 @@
 package solution
 
 import (
-	"cmp"
 	"errors"
-	"slices"
+
 )
 
 type Load struct {
@@ -52,7 +51,6 @@ func NewShift(loads []Load) (*Shift, error) {
 	if len(loads) > 200 {
 		return nil, errors.New("number of loads is over the limit")
 	}
-	SortLoadsByPickup(loads)
 	loads[0].Complete = true
 	firstDriver := NewDriver(loads[0])
 	return &Shift{
@@ -114,9 +112,3 @@ func (s *Shift) NextLoad() bool {
 	return false
 }
 
-func SortLoadsByPickup(loads []Load) {
-	slices.SortFunc(loads, func(l1, l2 Load) int {
-		return cmp.Compare(l1.Pickup.TimeToDepot() + l1.Duration() +l1.DropOff.TimeToDepot(), 
-		l2.Pickup.TimeToDepot()+ l2.Duration() + l2.DropOff.TimeToDepot())
-	})
-}

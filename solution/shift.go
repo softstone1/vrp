@@ -3,22 +3,8 @@ package solution
 import (
 	"cmp"
 	"errors"
-	"math"
 	"slices"
 )
-
-type Location struct {
-	X float64
-	Y float64
-}
-
-func (l Location) TimeToDepot() float64 {
-	return math.Sqrt(l.X*l.X + l.Y*l.Y)
-}
-
-func (l Location) TimeToLocation(l2 Location) float64 {
-	return math.Sqrt((l2.X-l.X)*(l2.X-l.X) + (l2.Y-l.Y)*(l2.Y-l.Y))
-}
 
 type Load struct {
 	Number   int
@@ -80,6 +66,8 @@ func (s *Shift) AddDriver(driver Driver) {
 }
 
 func (s *Shift) NextLoad() bool {
+	var maxTime float64 = 720 // 12 hours time limit
+	var newDriverTimeFactor float64 = 500
 	var nextLoad *Load
 	var nextDriver *Driver
 	var minTime float64 = -1
@@ -89,21 +77,21 @@ func (s *Shift) NextLoad() bool {
 			continue
 		}
 		// add a new driver
-		minTime = 500 + load.Pickup.TimeToDepot()
+		minTime = newDriverTimeFactor + load.Pickup.TimeToDepot()
 		nextLoad = &s.Loads[i]
 	}
 
 	for i, driver := range s.Drivers {
-		if driver.TotalTime >= 720 {
+		if driver.TotalTime >= maxTime {
 			continue
 		}
 		for j, load := range s.Loads {
 			if load.Complete {
 				continue
 			}
-			time := driver.LastLoad().DropOff.TimeToLocation(load.Pickup)
+			time := driver.LastLoad().DropOff.TimeToLocation(load.Pickup) 
 
-			if driver.TotalTime - driver.LastLoad().DropOff.TimeToDepot() + time + load.Duration() + load.DropOff.TimeToDepot() > 720 {
+			if driver.TotalTime + time + load.Duration() + load.DropOff.TimeToDepot() - driver.LastLoad().DropOff.TimeToDepot() > maxTime {
 				continue
 			}
 			if minTime == -1 || minTime > time {
@@ -128,6 +116,7 @@ func (s *Shift) NextLoad() bool {
 
 func SortLoadsByPickup(loads []Load) {
 	slices.SortFunc(loads, func(l1, l2 Load) int {
-		return cmp.Compare(l1.Pickup.TimeToDepot(), l2.Pickup.TimeToDepot())
+		return cmp.Compare(l1.Pickup.TimeToDepot() + l1.Duration() +l1.DropOff.TimeToDepot(), 
+		l2.Pickup.TimeToDepot()+ l2.Duration() + l2.DropOff.TimeToDepot())
 	})
 }

@@ -39,7 +39,6 @@ func (s *Shift) addDriver(driver Driver) {
 }
 
 func (s *Shift) NextLoad() bool {
-	var maxTime float64 = 12*60 // 12 hours time limit
 	var newDriverTimeFactor float64 = 500
 	var nextLoad *Load
 	var nextDriver *Driver
@@ -55,19 +54,18 @@ func (s *Shift) NextLoad() bool {
 	}
 
 	for i, driver := range s.Drivers {
-		if driver.TotalTime >= maxTime {
+		if driver.Done {
 			continue
 		}
 		for j, load := range s.Loads {
 			if load.Assigned {
 				continue
 			}
-			pickupTime := driver.LastLoad().DropOff.TimeToLocation(load.Pickup)
-
-			if driver.TotalTime - driver.LastLoad().DropOff.TimeToDepot() + 
-				pickupTime  + load.Duration() + load.DropOff.TimeToDepot() > maxTime {
+			if !driver.CanAddLoad(load) {
 				continue
 			}
+			pickupTime := driver.LastLocation().TimeToLocation(load.Pickup)
+
 			if minPickupTime == -1 || minPickupTime > pickupTime {
 				minPickupTime = pickupTime
 				nextLoad = &s.Loads[j]
